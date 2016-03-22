@@ -32,9 +32,7 @@ describe('Object property accessors', () => {
   );
 
   it('should be serialized', () =>
-    prop('hello').serialized.should.deep.equal(
-      [{ accessor: 'prop', args: ['hello'] }]
-    )
+    prop('hello').serialized.should.equal('hello')
   );
 
   it('should returned undefined when called on undefined', () =>
@@ -81,9 +79,7 @@ describe('Array accessors', () => {
     );
 
     it('should be serialized', () =>
-      nth(4).serialized.should.deep.equal(
-        [{ accessor: 'nth', args: [4] }]
-      )
+      nth(4).serialized.should.equal('[4]')
     );
   });
 
@@ -93,9 +89,7 @@ describe('Array accessors', () => {
     );
 
     it('should be serialized', () =>
-      first().serialized.should.deep.equal(
-        [{ accessor: 'first', args: [] }]
-      )
+      first().serialized.should.equal('[0]')
     );
   });
 
@@ -105,9 +99,7 @@ describe('Array accessors', () => {
     );
 
     it('should be serialized', () =>
-      last().serialized.should.deep.equal(
-        [{ accessor: 'last', args: [] }]
-      )
+      last().serialized.should.equal('[last]')
     );
   });
 
@@ -125,9 +117,7 @@ describe('Array accessors', () => {
     );
 
     it('should be serialized', () =>
-      beforeFirst().serialized.should.deep.equal(
-        [{ accessor: 'beforeFirst', args: [] }]
-      )
+      beforeFirst().serialized.should.equal('[beforeFirst]')
     );
   });
 
@@ -145,9 +135,7 @@ describe('Array accessors', () => {
     );
 
     it('should be serialized', () =>
-      afterLast().serialized.should.deep.equal(
-        [{ accessor: 'afterLast', args: [] }]
-      )
+      afterLast().serialized.should.equal('[afterLast]')
     );
   });
 
@@ -169,9 +157,7 @@ describe('Array accessors', () => {
     );
 
     it('should be serialized', () =>
-      beforeNth(1).serialized.should.deep.equal(
-        [{ accessor: 'beforeNth', args: [1] }]
-      )
+      beforeNth(1).serialized.should.equal('[beforeNth(1)]')
     );
   });
 
@@ -189,9 +175,7 @@ describe('Array accessors', () => {
     );
 
     it('should be serialized', () =>
-      afterNth(1).serialized.should.deep.equal(
-        [{ accessor: 'afterNth', args: [1] }]
-      )
+      afterNth(1).serialized.should.equal('[afterNth(1)]')
     );
   });
 });
@@ -232,10 +216,7 @@ describe('Accessors can be composed', () => {
   );
 
   it('two property setters composed should be serialized', () =>
-    compose(prop('hello'), prop('world')).serialized.should.deep.equal([
-      { accessor: 'prop', args: ['hello'] },
-      { accessor: 'prop', args: ['world'] },
-    ])
+    compose(prop('hello'), prop('world')).serialized.should.equal('hello.world')
   );
 
   it('three property setters composed should set a deep property', () =>
@@ -285,23 +266,35 @@ describe('Accessors can be composed', () => {
     );
 
     it('should be serialized', () =>
-      accessor.serialized.should.deep.equal([
-        { accessor: 'prop', args: ['a'] },
-        { accessor: 'nth', args: [1] },
-      ])
+      accessor.serialized.should.deep.equal('a[1]')
     );
   });
 
   describe('Accessor deserialization', () => {
-    it('should deserialize accessors represented as plain objects', () => {
-      const serializedAccessor = [
-        { accessor: 'prop', args: ['a'] },
-        { accessor: 'nth', args: [1] },
-      ];
+    const serializedAccessors = [
+      ['a', { a: 1 }, 1],
+      ['a.b', { a: { b: 1 } }, 1],
+      ['[1]', [0, 1], 1],
+      ['a[1]', { a: [0, 1] }, 1],
+      ['[last]', [0, 1, 2], 2],
+      ['[beforeFirst]', [0, 1, 2], undefined],
+      ['[afterLast]', [0, 1, 2], undefined],
+      ['[beforeNth(1)]', [0, 1, 2], 0],
+      ['[afterNth(1)]', [0, 1, 2], 2],
+      ['a[afterNth(1)].b.c', { a: [0, 1, { b: { c: 2 } }] }, 2],
+    ];
 
-      const accessor = deserialize(serializedAccessor);
-
-      accessor.of({ a: ['hey', 'you'] }).get().should.equal('you');
-    });
+    serializedAccessors.forEach(([serializedAccessor, tree, expectedValue]) =>
+      it(
+          `should deserialize '${serializedAccessor}'` +
+          ` and get '${JSON.stringify(expectedValue)}'` +
+          ` from '${JSON.stringify(tree)}'`,
+          () => {
+            const accessor = deserialize(serializedAccessor);
+            accessor.serialized.should.equal(serializedAccessor);
+            chai.expect(accessor.of(tree).get()).to.deep.equal(expectedValue);
+          }
+      )
+    );
   });
 });

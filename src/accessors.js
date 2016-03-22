@@ -1,5 +1,5 @@
 export const prop = propertyName => ({
-  serialized: [{ accessor: 'prop', args: [propertyName] }],
+  serialized: propertyName,
   of: object => ({
     get: () => object ? object[propertyName] : undefined,
     set: value => Object.assign({}, object, { [propertyName]: value }),
@@ -12,7 +12,7 @@ export const prop = propertyName => ({
 });
 
 export const nth = pos => ({
-  serialized: [{ accessor: 'nth', args: [pos] }],
+  serialized: `[${pos}]`,
   of: array => ({
     get: () => array[pos],
     set: value => [].concat(array.slice(0, pos), value, array.slice(pos + 1)),
@@ -21,7 +21,7 @@ export const nth = pos => ({
 });
 
 export const beforeFirst = () => ({
-  serialized: [{ accessor: 'beforeFirst', args: [] }],
+  serialized: '[beforeFirst]',
   of: array => ({
     get: () => undefined,
     set: value => [].concat(value, array),
@@ -30,7 +30,7 @@ export const beforeFirst = () => ({
 });
 
 export const afterLast = () => ({
-  serialized: [{ accessor: 'afterLast', args: [] }],
+  serialized: '[afterLast]',
   of: array => ({
     get: () => undefined,
     set: value => [].concat(array, value),
@@ -39,7 +39,7 @@ export const afterLast = () => ({
 });
 
 export const beforeNth = n => ({
-  serialized: [{ accessor: 'beforeNth', args: [n] }],
+  serialized: `[beforeNth(${n})]`,
   of: array => ({
     get: () => array[n - 1],
     set: value => [].concat(array.slice(0, n), value, array.slice(n)),
@@ -48,7 +48,7 @@ export const beforeNth = n => ({
 });
 
 export const afterNth = n => ({
-  serialized: [{ accessor: 'afterNth', args: [n] }],
+  serialized: `[afterNth(${n})]`,
   of: array => ({
     get: () => array[n + 1],
     set: value => [].concat(array.slice(0, n + 1), value, array.slice(n + 1)),
@@ -58,17 +58,18 @@ export const afterNth = n => ({
 
 export const first = () => Object.assign(
   {},
-  nth(0),
-  { serialized: [{ accessor: 'first', args: [] }] }
+  nth(0)
 );
 
 export const last = () => ({
-  serialized: [{ accessor: 'last', args: [] }],
+  serialized: '[last]',
   of: array => nth(array.length - 1).of(array),
 });
 
+const composeSerializedAccessors = (a, b) => (b[0] === '[') ? (a + b) : `${a}.${b}`;
+
 const compose2 = (a, b) => ({
-  serialized: [].concat(a.serialized, b.serialized),
+  serialized: composeSerializedAccessors(a.serialized, b.serialized),
   of: object => ({
     get: b.of(a.of(object).get()).get,
     set: value => a.of(object).set(
@@ -88,8 +89,47 @@ export const compose = (a, b, ...rest) => {
   return compose(compose2(a, b), ...rest);
 };
 
+const deserializeAtomicAccessor = accessor => {
+  if (accessor === '[last]') {
+    return last();
+  }
+
+  if (accessor === '[beforeFirst]') {
+    return beforeFirst();
+  }
+
+  if (accessor === '[afterLast]') {
+    return afterLast();
+  }
+
+  const matchesNth = /^\[(\d+)\]$/.exec(accessor);
+  if (matchesNth) {
+    return nth(+matchesNth[1]);
+  }
+
+  const matchesFuncWithArgs = /^\[(\w+)\((.*?)\)\]$/.exec(accessor);
+  if (matchesFuncWithArgs) {
+    const func = matchesFuncWithArgs[1];
+    const args = matchesFuncWithArgs[2].split(',').map(n => +n);
+    const funcs = {
+      beforeNth,
+      afterNth,
+    };
+    if (!(func in funcs)) {
+      throw new Error(`Unknown array accessor "${func}".`);
+    }
+    return funcs[func](...args);
+  }
+
+  if (accessor[0] !== '[') {
+    return prop(accessor);
+  }
+
+  throw new Error(`Could not deserialize atomic accessor "${accessor}".`);
+};
+
 export const deserialize = serializedAccessor =>
-  compose(...serializedAccessor.map(
-    ({ accessor, args }) => module.exports[accessor](...args)
+  compose(...serializedAccessor.replace(/([^.])\[/g, '$1.[').split('.').map(
+    part => deserializeAtomicAccessor(part)
   ))
 ;
