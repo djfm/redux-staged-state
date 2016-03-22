@@ -1,5 +1,8 @@
-import { compose as composeAccessors } from './accessors';
+import { compose as composeAccessors, deserialize as deserializeAccessor } from './accessors';
 
-export const stage = config => state => ({
-  get: accessor => composeAccessors(config.accessor, accessor).of(state).get(),
+export const stage = rootAccessor => state => ({
+  get: accessor => composeAccessors(
+      deserializeAccessor(rootAccessor),
+      deserializeAccessor(accessor)
+    ).of(state).get(),
 });
