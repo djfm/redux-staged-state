@@ -9,6 +9,16 @@ describe('The stage function', () => {
     const state = { hello: { to: 'you' } };
     stage('hello')(state).get('to').should.equal('you');
   });
+  describe('a getter', () => {
+    it('prefers the staged value when there is one', () => {
+      const state = { hello: { to: 'you' }, staged: { hello: { to: 'you all' } } };
+      stage(
+        'hello',
+        undefined,
+        { stagedMountPoint: 'staged' }
+      )(state).get('to').should.equal('you all');
+    });
+  });
   describe('given a dispatch function', () => {
     it('takes an accessor and provides setters to the node', () => {
       const state = { hello: { to: 'you' } };

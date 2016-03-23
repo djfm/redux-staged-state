@@ -1,12 +1,23 @@
 import { compose as composeAccessors, deserialize as deserializeAccessor } from './accessors';
 import { SET_TYPE, DELETE_TYPE } from './constants';
 
-const makeGetter = (rootAccessor, state) =>
-  accessor => composeAccessors(
-    deserializeAccessor(rootAccessor),
-    deserializeAccessor(accessor)
-  ).of(state).get()
-;
+const makeGetter = (rootAccessor, state, config = {}) => accessor => {
+  const accessorObj = composeAccessors(
+   deserializeAccessor(rootAccessor),
+   deserializeAccessor(accessor)
+ );
+
+  const originalValue = accessorObj.of(state).get();
+  const stagedValue = (config.stagedMountPoint ? composeAccessors(
+   deserializeAccessor(config.stagedMountPoint), accessorObj
+  ) : accessorObj).of(state).get();
+
+  if (stagedValue === undefined) {
+    return originalValue;
+  }
+
+  return stagedValue;
+};
 
 const makeSetter = (rootAccessor, dispatch) =>
   (accessor, value) => dispatch({
@@ -36,8 +47,8 @@ const makeBindings = (rootAccessor, dispatch, state) =>
   })
 ;
 
-export const stage = (rootAccessor, dispatch) => state => ({
-  get: makeGetter(rootAccessor, state),
+export const stage = (rootAccessor, dispatch, config) => state => ({
+  get: makeGetter(rootAccessor, state, config),
   set: dispatch ? makeSetter(rootAccessor, dispatch) : undefined,
   delete: dispatch ? makeDeleter(rootAccessor, dispatch) : undefined,
   bindings: dispatch ? makeBindings(rootAccessor, dispatch, state) : undefined,
