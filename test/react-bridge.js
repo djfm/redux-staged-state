@@ -1,12 +1,14 @@
 /* global describe, it */
 import React from 'react';
 import ReactDOM from 'react-dom';
+import ReactTestUtils from 'react-addons-test-utils';
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import { createStore, combineReducers } from 'redux';
 import jsdom from 'mocha-jsdom';
 import chai from 'chai';
 
 import { connectStaged } from '../src/react-bridge';
+import { reducer } from '../src/reducer';
 
 describe('The react bridge', () => {
   jsdom();
@@ -15,7 +17,7 @@ describe('The react bridge', () => {
     const store = createStore(() => ({}));
 
     const Component = chai.spy(props => {
-      props.should.include.keys('get', 'set', 'delete');
+      props.should.include.keys('get', 'set', 'delete', 'bindings');
       return <div></div>;
     });
 
@@ -29,5 +31,35 @@ describe('The react bridge', () => {
     );
 
     Component.should.have.been.called();
+  });
+
+  it('should provide an onChange event handler builder that stages the new value', () => {
+    const store = createStore(combineReducers({
+      staged: reducer,
+      customer: (state = ({ name: 'Bob' })) => state,
+    }));
+
+    const VanillaCustomerForm = ({ bindings }) =>
+      <input type="text" onChange={bindings('name').onChange} />
+    ;
+    VanillaCustomerForm.propTypes = { bindings: React.PropTypes.func.isRequired };
+
+    const CustomerForm = connectStaged('customer')(VanillaCustomerForm);
+
+    const tree = ReactDOM.render(
+      <Provider store={store}>
+        <CustomerForm />
+      </Provider>,
+      document.createElement('div')
+    );
+
+    const input = ReactTestUtils.findRenderedDOMComponentWithTag(tree, 'input');
+    input.value = 'Alice';
+    ReactTestUtils.Simulate.change(input);
+
+    store.getState().should.deep.equal({
+      customer: { name: 'Bob' },
+      staged: { customer: { name: 'Alice' } },
+    });
   });
 });

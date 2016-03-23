@@ -29,5 +29,9 @@ describe('The stage function', () => {
       stage('hello', dispatch)(state).delete('to');
       dispatch.should.have.been.called();
     });
+    it('provides a bindings method (that is useful for integration with react)', () => {
+      const bindings = stage('hello', () => undefined)({}).bindings;
+      bindings('hello').should.respondTo('onChange');
+    });
   });
 });

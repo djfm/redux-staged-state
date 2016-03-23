@@ -22,6 +22,12 @@ const makeDeleter = (rootAccessor, dispatch) =>
   })
 ;
 
+const makeBindings = (rootAccessor, dispatch) =>
+  accessor => ({
+    onChange: event => makeSetter(rootAccessor, dispatch)(accessor, event.target.value),
+  })
+;
+
 export const stage = (rootAccessor, dispatch) => state => ({
   get: accessor => composeAccessors(
       deserializeAccessor(rootAccessor),
@@ -29,4 +35,5 @@ export const stage = (rootAccessor, dispatch) => state => ({
     ).of(state).get(),
   set: dispatch ? makeSetter(rootAccessor, dispatch) : undefined,
   delete: dispatch ? makeDeleter(rootAccessor, dispatch) : undefined,
+  bindings: dispatch ? makeBindings(rootAccessor, dispatch) : undefined,
 });
