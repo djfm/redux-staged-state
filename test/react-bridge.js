@@ -62,4 +62,25 @@ describe('The react bridge', () => {
       staged: { customer: { name: 'Alice' } },
     });
   });
+
+  it('should provide a value binding that gets the value from the state', () => {
+    const store = createStore((state = { customer: { name: 'Bob' } }) => state);
+
+    const VanillaCustomerForm = ({ bindings }) =>
+      <input type="text" value={bindings('name').value} />
+    ;
+    VanillaCustomerForm.propTypes = { bindings: React.PropTypes.func.isRequired };
+
+    const CustomerForm = connectStaged('customer')(VanillaCustomerForm);
+
+    const tree = ReactDOM.render(
+      <Provider store={store}>
+        <CustomerForm />
+      </Provider>,
+      document.createElement('div')
+    );
+
+    const input = ReactTestUtils.findRenderedDOMComponentWithTag(tree, 'input');
+    input.value.should.equal('Bob');
+  });
 });
