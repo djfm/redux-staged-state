@@ -219,6 +219,10 @@ describe('Accessors can be composed', () => {
     })
   );
 
+  it('accessor composition should work with strings to', () =>
+    compose(prop('hello'), 'world').serialized.should.equal('hello.world')
+  );
+
   it('two property setters composed should be serialized', () =>
     compose(prop('hello'), prop('world')).serialized.should.equal('hello.world')
   );

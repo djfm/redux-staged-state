@@ -66,29 +66,6 @@ export const last = () => ({
   of: array => nth(array.length - 1).of(array),
 });
 
-const composeSerializedAccessors = (a, b) => (b[0] === '[') ? (a + b) : `${a}.${b}`;
-
-const compose2 = (a, b) => (a && b) ? ({
-  serialized: composeSerializedAccessors(a.serialized, b.serialized),
-  of: object => ({
-    get: b.of(a.of(object).get()).get,
-    set: value => a.of(object).set(
-      b.of(a.of(object).get()).set(value)
-    ),
-    delete: () => a.of(object).set(b.of(a.of(object).get()).delete()),
-  }),
-}) : (a || b);
-
-export const compose = (a, b, ...rest) => {
-  if (rest.length === 0) {
-    if (b) {
-      return compose2(a, b);
-    }
-    return a;
-  }
-  return compose(compose2(a, b), ...rest);
-};
-
 const deserializeAtomicAccessor = accessor => {
   if (accessor === '[last]') {
     return last();
@@ -128,8 +105,48 @@ const deserializeAtomicAccessor = accessor => {
   throw new Error(`Could not deserialize atomic accessor "${accessor}".`);
 };
 
+/* eslint-disable no-use-before-define */
 export const deserialize = serializedAccessor =>
   serializedAccessor ? compose(...serializedAccessor.replace(/([^.])\[/g, '$1.[').split('.').map(
     part => deserializeAtomicAccessor(part)
   )) : undefined
 ;
+/* eslint-enable no-use-before-define */
+
+const composeSerializedAccessors = (a, b) => (b[0] === '[') ? (a + b) : `${a}.${b}`;
+
+const compose2 = (maybeA, maybeB) => {
+  const prepareAccesor = maybeAccessor => {
+    if (!maybeAccessor) {
+      return undefined;
+    }
+    return typeof maybeAccessor === 'string' ? deserialize(maybeAccessor) : maybeAccessor;
+  };
+
+  const [a, b] = [maybeA, maybeB].map(prepareAccesor);
+
+  if (a && b) {
+    return {
+      serialized: composeSerializedAccessors(a.serialized, b.serialized),
+      of: object => ({
+        get: b.of(a.of(object).get()).get,
+        set: value => a.of(object).set(
+          b.of(a.of(object).get()).set(value)
+        ),
+        delete: () => a.of(object).set(b.of(a.of(object).get()).delete()),
+      }),
+    };
+  }
+
+  return a || b;
+};
+
+export const compose = (a, b, ...rest) => {
+  if (rest.length === 0) {
+    if (b) {
+      return compose2(a, b);
+    }
+    return a;
+  }
+  return compose(compose2(a, b), ...rest);
+};
