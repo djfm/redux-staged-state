@@ -129,7 +129,7 @@ const deserializeAtomicAccessor = accessor => {
 };
 
 export const deserialize = serializedAccessor =>
-  compose(...serializedAccessor.replace(/([^.])\[/g, '$1.[').split('.').map(
+  serializedAccessor ? compose(...serializedAccessor.replace(/([^.])\[/g, '$1.[').split('.').map(
     part => deserializeAtomicAccessor(part)
-  ))
+  )) : undefined
 ;

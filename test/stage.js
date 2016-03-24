@@ -30,6 +30,15 @@ describe('The stage function', () => {
       stage('hello', dispatch)(state).set('to', 'you all');
       dispatch.should.have.been.called();
     });
+    it('setters only update the tree under the staged mountpoint', () => {
+      const state = { hello: { to: 'you' } };
+      const dispatch = chai.spy(action => {
+        action.accessor.should.equal('staged.hello.to');
+        action.type.should.equal(SET_TYPE);
+      });
+      stage('hello', dispatch, { stagedMountPoint: 'staged' })(state).set('to', 'you all');
+      dispatch.should.have.been.called();
+    });
     it('takes an accessor and provides deleters to the node', () => {
       const state = { hello: { to: 'you' } };
       const dispatch = chai.spy(action => {

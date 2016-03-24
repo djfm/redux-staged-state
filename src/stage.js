@@ -19,10 +19,11 @@ const makeGetter = (rootAccessor, state, config = {}) => accessor => {
   return stagedValue;
 };
 
-const makeSetter = (rootAccessor, dispatch) =>
+const makeSetter = (rootAccessor, dispatch, config = {}) =>
   (accessor, value) => dispatch({
     type: SET_TYPE,
     accessor: composeAccessors(
+        deserializeAccessor(config.stagedMountPoint),
         deserializeAccessor(rootAccessor),
         deserializeAccessor(accessor)
       ).serialized,
@@ -49,7 +50,7 @@ const makeBindings = (rootAccessor, dispatch, state) =>
 
 export const stage = (rootAccessor, dispatch, config) => state => ({
   get: makeGetter(rootAccessor, state, config),
-  set: dispatch ? makeSetter(rootAccessor, dispatch) : undefined,
+  set: dispatch ? makeSetter(rootAccessor, dispatch, config) : undefined,
   delete: dispatch ? makeDeleter(rootAccessor, dispatch) : undefined,
   bindings: dispatch ? makeBindings(rootAccessor, dispatch, state) : undefined,
 });
