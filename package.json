@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --compilers js:babel-register --require ./test/test-utils/setup.js",
     "tdd": "npm run test -- --watch",
-    "build": "webpack"
+    "build": "webpack -p"
   },
   "repository": {
     "type": "git",
