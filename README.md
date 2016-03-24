@@ -5,3 +5,5 @@
 The goal of this library is to provide a convenient way to manage transient state in a redux application.
 
 The idea is similar to that of [redux-form](https://github.com/erikras/redux-form), but it differs in that it does not focus on *forms*, but on *staged state*, that is, parts of the state the a user intends to change but has not committed yet. Staged state may appear in different forms.
+
+It's a work in progress, but the [React integration test cases](https://github.com/djfm/redux-staged-state/blob/master/test/react-bridge.js) should give you a rough idea of where this is going.
