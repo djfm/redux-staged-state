@@ -68,7 +68,7 @@ export const last = () => ({
 
 const composeSerializedAccessors = (a, b) => (b[0] === '[') ? (a + b) : `${a}.${b}`;
 
-const compose2 = (a, b) => ({
+const compose2 = (a, b) => (a && b) ? ({
   serialized: composeSerializedAccessors(a.serialized, b.serialized),
   of: object => ({
     get: b.of(a.of(object).get()).get,
@@ -77,7 +77,7 @@ const compose2 = (a, b) => ({
     ),
     delete: () => a.of(object).set(b.of(a.of(object).get()).delete()),
   }),
-});
+}) : (a || b);
 
 export const compose = (a, b, ...rest) => {
   if (rest.length === 0) {

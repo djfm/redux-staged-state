@@ -185,6 +185,10 @@ describe('Accessors can be composed', () => {
     compose(prop('hello'))
   );
 
+  it('composing an accessor with falsey things should not be an error', () =>
+    compose(prop('hello'), false, prop('world')).serialized.should.equal('hello.world')
+  );
+
   it('two property getters composed should fetch a deep property', () =>
     compose(prop('hello'), prop('world')).of({
       hello: {
