@@ -67,7 +67,7 @@ describe('The react bridge', () => {
     const store = createStore((state = { customer: { name: 'Bob' } }) => state);
 
     const VanillaCustomerForm = ({ bindings }) =>
-      <input type="text" value={bindings('name').value} />
+      <input type="text" defaultValue={bindings('name').value} />
     ;
     VanillaCustomerForm.propTypes = { bindings: React.PropTypes.func.isRequired };
 
