@@ -23,3 +23,20 @@ export const deepIncludes = parent => child => {
 
   return true;
 };
+
+export const sequenceCommonFunctions = (first, then) => {
+  const newThen = {};
+
+  for (const k in then) {
+    if (k in first) {
+      newThen[k] = (...args) => {
+        first[k](...args);
+        return then[k](...args);
+      };
+    } else {
+      newThen[k] = then[k];
+    }
+  }
+
+  return Object.assign({}, first, newThen);
+};
