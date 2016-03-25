@@ -1,6 +1,6 @@
 import { compose as composeAccessors } from './accessors';
 import { SET_TYPE, DELETE_TYPE } from './constants';
-import { deepIncludes } from './utils';
+import { deepIncludes, sequenceCommonFunctions } from './utils';
 
 const makeGetter = (rootAccessor, state, config = {}) => accessor => {
   const accessorObj = composeAccessors(rootAccessor, accessor);
@@ -47,10 +47,13 @@ const makeDeleter = (rootAccessor, dispatch) =>
 ;
 
 const makeBindings = (rootAccessor, dispatch, state) =>
-  accessor => ({
-    onChange: event => makeSetter(rootAccessor, dispatch)(accessor, event.target.value),
-    value: makeGetter(rootAccessor, state)(accessor),
-  })
+  (accessor, additionalHandlers = {}) => sequenceCommonFunctions(
+    additionalHandlers,
+    {
+      onChange: event => makeSetter(rootAccessor, dispatch)(accessor, event.target.value),
+      value: makeGetter(rootAccessor, state)(accessor),
+    }
+  )
 ;
 
 export const stage = (rootAccessor, dispatch, config) => state => ({
