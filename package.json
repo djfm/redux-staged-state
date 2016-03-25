@@ -3,6 +3,7 @@
   "version": "1.0.4",
   "description": "Let users stage part of the state, useful e.g. for forms",
   "main": "dist/redux-staged-state.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register --require ./test/test-utils/setup.js",
     "tdd": "npm run test -- --watch",
