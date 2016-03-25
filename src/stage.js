@@ -2,10 +2,14 @@ import { compose as composeAccessors } from './accessors';
 import { SET_TYPE, DELETE_TYPE } from './constants';
 import { deepIncludes, sequenceCommonFunctions } from './utils';
 
-const makeGetter = (rootAccessor, state, config = {}) => accessor => {
+
+const ifUndefined = (candidate, replacement) => candidate === undefined ? replacement : candidate;
+
+const makeGetter = (rootAccessor, state, config = {}) => (accessor, defaultValue) => {
   const accessorObj = composeAccessors(rootAccessor, accessor);
 
-  const originalValue = accessorObj.of(state).get();
+  const originalValue = ifUndefined(accessorObj.of(state).get(), defaultValue);
+
   const stagedValue = composeAccessors(config.stagedMountPoint, accessorObj).of(state).get();
 
   if (stagedValue === undefined) {

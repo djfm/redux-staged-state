@@ -18,6 +18,10 @@ describe('The stage function', () => {
         { stagedMountPoint: 'staged' }
       )(state).get('to').should.equal('you all');
     });
+    it('accepts a default value', () => {
+      const state = { hello: { to: 'you' } };
+      stage('hello')(state).get('Alice', 'Bob').should.equal('Bob');
+    });
   });
   describe('the pristine method', () => {
     it('tells you whether the staged element was changed - it was changed', () => {
