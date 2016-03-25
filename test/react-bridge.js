@@ -103,4 +103,69 @@ describe('The react bridge', () => {
     const input = ReactTestUtils.findRenderedDOMComponentWithTag(tree, 'input');
     input.value.should.equal('Bob');
   });
+
+  it('should provide a value binding that gets the staged value if there is one', () => {
+    const initialState = {
+      customer: {
+        name: 'Bob',
+      },
+      staged: {
+        customer: {
+          name: 'Alice',
+        },
+      },
+    };
+    const store = createStore((state = initialState) => state);
+
+    const VanillaCustomerForm = ({ bindings }) =>
+      <input type="text" defaultValue={bindings('name').value} />
+    ;
+    VanillaCustomerForm.propTypes = { bindings: React.PropTypes.func.isRequired };
+
+    const CustomerForm = connectStaged(
+      'customer',
+      { stagedMountPoint: 'staged' }
+    )(VanillaCustomerForm);
+
+    const tree = ReactDOM.render(
+      <Provider store={store}>
+        <CustomerForm />
+      </Provider>,
+      document.createElement('div')
+    );
+
+    const input = ReactTestUtils.findRenderedDOMComponentWithTag(tree, 'input');
+    input.value.should.equal('Alice');
+  });
+
+  it('by default, the staged state is mounted at "staged"', () => {
+    const initialState = {
+      customer: {
+        name: 'Bob',
+      },
+      staged: {
+        customer: {
+          name: 'Alice',
+        },
+      },
+    };
+    const store = createStore((state = initialState) => state);
+
+    const VanillaCustomerForm = ({ bindings }) =>
+      <input type="text" defaultValue={bindings('name').value} />
+    ;
+    VanillaCustomerForm.propTypes = { bindings: React.PropTypes.func.isRequired };
+
+    const CustomerForm = connectStaged('customer')(VanillaCustomerForm);
+
+    const tree = ReactDOM.render(
+      <Provider store={store}>
+        <CustomerForm />
+      </Provider>,
+      document.createElement('div')
+    );
+
+    const input = ReactTestUtils.findRenderedDOMComponentWithTag(tree, 'input');
+    input.value.should.equal('Alice');
+  });
 });

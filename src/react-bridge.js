@@ -2,8 +2,8 @@ import React, { createElement } from 'react';
 
 import { stage } from './stage';
 
-const getPropsFromStore = store => accessor =>
-  stage(accessor, store.dispatch)(store.getState())
+const getPropsFromStore = (store, config = {}) => accessor =>
+  stage(accessor, store.dispatch, config)(store.getState())
 ;
 
 const mapPropsToAccessor = (props, accessorCreator) => {
@@ -13,13 +13,15 @@ const mapPropsToAccessor = (props, accessorCreator) => {
   return accessorCreator;
 };
 
-export const connectStaged = accessorCreator => WrappedComponent => {
+export const connectStaged = (accessorCreator, userConfig = {}) => WrappedComponent => {
+  const config = Object.assign({ stagedMountPoint: 'staged' }, userConfig);
+
   const Container = (props, context) => createElement(
     WrappedComponent,
     Object.assign(
       {},
       props,
-      getPropsFromStore(context.store)(
+      getPropsFromStore(context.store, config)(
         mapPropsToAccessor(props, accessorCreator)
       )
     )

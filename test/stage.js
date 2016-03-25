@@ -52,10 +52,10 @@ describe('The stage function', () => {
       stage('hello', dispatch)(state).set('to', 'you all');
       dispatch.should.have.been.called();
     });
-    it('setters only update the tree under the staged mountpoint', () => {
+    it('the staged mount point does not alter set\'s behaviour', () => {
       const state = { hello: { to: 'you' } };
       const dispatch = chai.spy(action => {
-        action.accessor.should.equal('staged.hello.to');
+        action.accessor.should.equal('hello.to');
         action.type.should.equal(SET_TYPE);
       });
       stage('hello', dispatch, { stagedMountPoint: 'staged' })(state).set('to', 'you all');

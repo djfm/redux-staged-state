@@ -28,11 +28,10 @@ const makePristine = (rootAccessor, state, config = {}) => accessor => {
   return deepIncludes(originalValue)(stagedValue);
 };
 
-const makeSetter = (rootAccessor, dispatch, config = {}) =>
+const makeSetter = (rootAccessor, dispatch) =>
   (accessor, value) => dispatch({
     type: SET_TYPE,
     accessor: composeAccessors(
-        config.stagedMountPoint,
         rootAccessor,
         accessor
       ).serialized,
@@ -50,12 +49,12 @@ const makeDeleter = (rootAccessor, dispatch) =>
   })
 ;
 
-const makeBindings = (rootAccessor, dispatch, state) =>
+const makeBindings = (rootAccessor, dispatch, state, config = {}) =>
   (accessor, additionalHandlers = {}) => sequenceCommonFunctions(
     additionalHandlers,
     {
       onChange: event => makeSetter(rootAccessor, dispatch)(accessor, event.target.value),
-      value: makeGetter(rootAccessor, state)(accessor),
+      value: makeGetter(rootAccessor, state, config)(accessor),
     }
   )
 ;
@@ -63,8 +62,8 @@ const makeBindings = (rootAccessor, dispatch, state) =>
 export const stage = (rootAccessor, dispatch, config) => state => ({
   get: makeGetter(rootAccessor, state, config),
   pristine: makePristine(rootAccessor, state, config),
-  set: dispatch ? makeSetter(rootAccessor, dispatch, config) : undefined,
+  set: dispatch ? makeSetter(rootAccessor, dispatch) : undefined,
   delete: dispatch ? makeDeleter(rootAccessor, dispatch) : undefined,
-  bindings: dispatch ? makeBindings(rootAccessor, dispatch, state) : undefined,
+  bindings: dispatch ? makeBindings(rootAccessor, dispatch, state, config) : undefined,
   rootAccessor,
 });
