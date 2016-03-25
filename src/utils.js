@@ -40,3 +40,15 @@ export const sequenceCommonFunctions = (first, then) => {
 
   return Object.assign({}, first, newThen);
 };
+
+export const merge = (parent, child) => {
+  if (parent instanceof Array && child instanceof Array) {
+    return child;
+  }
+
+  if (parent instanceof Object && child instanceof Object) {
+    return Object.assign({}, parent, child);
+  }
+
+  return child;
+};

@@ -1,22 +1,20 @@
 import { compose as composeAccessors } from './accessors';
 import { SET_TYPE, DELETE_TYPE } from './constants';
-import { deepIncludes, sequenceCommonFunctions } from './utils';
+import { deepIncludes, sequenceCommonFunctions, merge } from './utils';
 
 
 const ifUndefined = (candidate, replacement) => candidate === undefined ? replacement : candidate;
 
 const makeGetter = (rootAccessor, state, config = {}) => (accessor, defaultValue) => {
   const accessorObj = composeAccessors(rootAccessor, accessor);
-
   const originalValue = ifUndefined(accessorObj.of(state).get(), defaultValue);
-
   const stagedValue = composeAccessors(config.stagedMountPoint, accessorObj).of(state).get();
 
   if (stagedValue === undefined) {
     return originalValue;
   }
 
-  return stagedValue;
+  return merge(originalValue, stagedValue);
 };
 
 const makePristine = (rootAccessor, state, config = {}) => accessor => {

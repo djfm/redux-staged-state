@@ -20046,16 +20046,14 @@ module.exports =
 	  var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 	  return function (accessor, defaultValue) {
 	    var accessorObj = (0, _accessors.compose)(rootAccessor, accessor);
-
 	    var originalValue = ifUndefined(accessorObj.of(state).get(), defaultValue);
-
 	    var stagedValue = (0, _accessors.compose)(config.stagedMountPoint, accessorObj).of(state).get();
 
 	    if (stagedValue === undefined) {
 	      return originalValue;
 	    }
 
-	    return stagedValue;
+	    return (0, _utils.merge)(originalValue, stagedValue);
 	  };
 	};
 
@@ -20175,6 +20173,18 @@ module.exports =
 	  }
 
 	  return Object.assign({}, first, newThen);
+	};
+
+	var merge = exports.merge = function merge(parent, child) {
+	  if (parent instanceof Array && child instanceof Array) {
+	    return child;
+	  }
+
+	  if (parent instanceof Object && child instanceof Object) {
+	    return Object.assign({}, parent, child);
+	  }
+
+	  return child;
 	};
 
 /***/ }
