@@ -48,4 +48,5 @@ export const stage = (rootAccessor, dispatch, config) => state => ({
   set: dispatch ? makeSetter(rootAccessor, dispatch, config) : undefined,
   delete: dispatch ? makeDeleter(rootAccessor, dispatch) : undefined,
   bindings: dispatch ? makeBindings(rootAccessor, dispatch, state) : undefined,
+  rootAccessor,
 });

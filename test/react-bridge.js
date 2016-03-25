@@ -33,6 +33,26 @@ describe('The react bridge', () => {
     Component.should.have.been.called();
   });
 
+  it('connectStaged should also accept an accessor creator mapping props to an accessor', () => {
+    const store = createStore(() => ({}));
+
+    const Component = chai.spy(props => {
+      props.should.include({ rootAccessor: 'a prop' });
+      return <div></div>;
+    });
+
+    const WrappedComponent = connectStaged(({ testProp }) => testProp)(Component);
+
+    ReactDOM.render(
+      <Provider store={store}>
+        <WrappedComponent testProp={'a prop'} />
+      </Provider>,
+      document.createElement('div')
+    );
+
+    Component.should.have.been.called();
+  });
+
   it('should provide an onChange event handler builder that stages the new value', () => {
     const store = createStore(combineReducers({
       staged: reducer,
