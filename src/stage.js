@@ -1,5 +1,6 @@
 import { compose as composeAccessors } from './accessors';
 import { SET_TYPE, DELETE_TYPE } from './constants';
+import { deepIncludes } from './utils';
 
 const makeGetter = (rootAccessor, state, config = {}) => accessor => {
   const accessorObj = composeAccessors(rootAccessor, accessor);
@@ -12,6 +13,15 @@ const makeGetter = (rootAccessor, state, config = {}) => accessor => {
   }
 
   return stagedValue;
+};
+
+const makePristine = (rootAccessor, state, config = {}) => accessor => {
+  const accessorObj = composeAccessors(rootAccessor, accessor);
+
+  const originalValue = accessorObj.of(state).get();
+  const stagedValue = composeAccessors(config.stagedMountPoint, accessorObj).of(state).get();
+
+  return deepIncludes(originalValue)(stagedValue);
 };
 
 const makeSetter = (rootAccessor, dispatch, config = {}) =>
@@ -45,6 +55,7 @@ const makeBindings = (rootAccessor, dispatch, state) =>
 
 export const stage = (rootAccessor, dispatch, config) => state => ({
   get: makeGetter(rootAccessor, state, config),
+  pristine: makePristine(rootAccessor, state, config),
   set: dispatch ? makeSetter(rootAccessor, dispatch, config) : undefined,
   delete: dispatch ? makeDeleter(rootAccessor, dispatch) : undefined,
   bindings: dispatch ? makeBindings(rootAccessor, dispatch, state) : undefined,

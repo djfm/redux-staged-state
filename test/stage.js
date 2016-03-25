@@ -19,6 +19,24 @@ describe('The stage function', () => {
       )(state).get('to').should.equal('you all');
     });
   });
+  describe('the pristine method', () => {
+    it('tells you whether the staged element was changed - it was changed', () => {
+      const state = { hello: { to: 'you' }, staged: { hello: { to: 'you all' } } };
+      stage(
+        'hello',
+        undefined,
+        { stagedMountPoint: 'staged' }
+      )(state).pristine().should.equal(false);
+    });
+    it('tells you whether the staged element was changed - it wasn\'t changed', () => {
+      const state = { hello: { to: 'you' }, staged: { hello: { to: 'you' } } };
+      stage(
+        'hello',
+        undefined,
+        { stagedMountPoint: 'staged' }
+      )(state).pristine().should.equal(true);
+    });
+  });
   describe('given a dispatch function', () => {
     it('takes an accessor and provides setters to the node', () => {
       const state = { hello: { to: 'you' } };

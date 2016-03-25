@@ -17,7 +17,7 @@ describe('The react bridge', () => {
     const store = createStore(() => ({}));
 
     const Component = chai.spy(props => {
-      props.should.include.keys('get', 'set', 'delete', 'bindings');
+      props.should.include.keys('get', 'set', 'delete', 'bindings', 'pristine');
       return <div></div>;
     });
 
