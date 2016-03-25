@@ -39,7 +39,7 @@ const makeSetter = (rootAccessor, dispatch) =>
   })
 ;
 
-const makeDeleter = (rootAccessor, dispatch) =>
+const makeResetter = (rootAccessor, dispatch) =>
   accessor => dispatch({
     type: DELETE_TYPE,
     accessor: composeAccessors(
@@ -63,7 +63,7 @@ export const stage = (rootAccessor, dispatch, config) => state => ({
   get: makeGetter(rootAccessor, state, config),
   pristine: makePristine(rootAccessor, state, config),
   set: dispatch ? makeSetter(rootAccessor, dispatch) : undefined,
-  delete: dispatch ? makeDeleter(rootAccessor, dispatch) : undefined,
+  reset: dispatch ? makeResetter(rootAccessor, dispatch) : undefined,
   bindings: dispatch ? makeBindings(rootAccessor, dispatch, state, config) : undefined,
   rootAccessor,
 });

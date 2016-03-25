@@ -61,13 +61,13 @@ describe('The stage function', () => {
       stage('hello', dispatch, { stagedMountPoint: 'staged' })(state).set('to', 'you all');
       dispatch.should.have.been.called();
     });
-    it('takes an accessor and provides deleters to the node', () => {
+    it('takes an accessor and provides resetters to the node', () => {
       const state = { hello: { to: 'you' } };
       const dispatch = chai.spy(action => {
         action.accessor.should.equal('hello.to');
         action.type.should.equal(DELETE_TYPE);
       });
-      stage('hello', dispatch)(state).delete('to');
+      stage('hello', dispatch)(state).reset('to');
       dispatch.should.have.been.called();
     });
     it('provides a bindings method (that is useful for integration with react)', () => {

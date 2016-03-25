@@ -20081,7 +20081,7 @@ module.exports =
 	  };
 	};
 
-	var makeDeleter = function makeDeleter(rootAccessor, dispatch) {
+	var makeResetter = function makeResetter(rootAccessor, dispatch) {
 	  return function (accessor) {
 	    return dispatch({
 	      type: _constants.DELETE_TYPE,
@@ -20109,7 +20109,7 @@ module.exports =
 	      get: makeGetter(rootAccessor, state, config),
 	      pristine: makePristine(rootAccessor, state, config),
 	      set: dispatch ? makeSetter(rootAccessor, dispatch) : undefined,
-	      delete: dispatch ? makeDeleter(rootAccessor, dispatch) : undefined,
+	      reset: dispatch ? makeResetter(rootAccessor, dispatch) : undefined,
 	      bindings: dispatch ? makeBindings(rootAccessor, dispatch, state, config) : undefined,
 	      rootAccessor: rootAccessor
 	    };
