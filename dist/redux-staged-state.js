@@ -20128,6 +20128,10 @@ module.exports =
 
 	var deepIncludes = exports.deepIncludes = function deepIncludes(parent) {
 	  return function (child) {
+	    if (child === undefined) {
+	      return true;
+	    }
+
 	    if ((typeof parent === "undefined" ? "undefined" : _typeof(parent)) !== (typeof child === "undefined" ? "undefined" : _typeof(child))) {
 	      return false;
 	    }

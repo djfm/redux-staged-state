@@ -10,6 +10,7 @@ describe('The deepIncludes util', () => {
     [{ a: { b: 'b', c: 'c' } }, { a: { b: 'b' } }, true],
     [[1, 2], [1], false],
     [[1, 2], [1, 2], true],
+    [{}, undefined, true],
   ];
 
   examples.forEach(([parent, child, expected]) =>

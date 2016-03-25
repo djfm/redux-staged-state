@@ -1,4 +1,8 @@
 export const deepIncludes = parent => child => {
+  if (child === undefined) {
+    return true;
+  }
+
   if ((typeof parent) !== (typeof child)) {
     return false;
   }
