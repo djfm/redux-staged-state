@@ -115,14 +115,14 @@ export const deserialize = serializedAccessor =>
 
 const composeSerializedAccessors = (a, b) => (b[0] === '[') ? (a + b) : `${a}.${b}`;
 
-const compose2 = (maybeA, maybeB) => {
-  const prepareAccesor = maybeAccessor => {
-    if (!maybeAccessor) {
-      return undefined;
-    }
-    return typeof maybeAccessor === 'string' ? deserialize(maybeAccessor) : maybeAccessor;
-  };
+const prepareAccesor = maybeAccessor => {
+  if (!maybeAccessor) {
+    return undefined;
+  }
+  return typeof maybeAccessor === 'string' ? deserialize(maybeAccessor) : maybeAccessor;
+};
 
+const compose2 = (maybeA, maybeB) => {
   const [a, b] = [maybeA, maybeB].map(prepareAccesor);
 
   if (a && b) {
@@ -146,7 +146,7 @@ export const compose = (a, b, ...rest) => {
     if (b) {
       return compose2(a, b);
     }
-    return a;
+    return prepareAccesor(a);
   }
   return compose(compose2(a, b), ...rest);
 };

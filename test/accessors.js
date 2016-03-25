@@ -223,6 +223,10 @@ describe('Accessors can be composed', () => {
     compose(prop('hello'), 'world').serialized.should.equal('hello.world')
   );
 
+  it('composing a string with nothing returns an accessor object', () =>
+    compose('hello', undefined).serialized.should.equal('hello')
+  );
+
   it('two property setters composed should be serialized', () =>
     compose(prop('hello'), prop('world')).serialized.should.equal('hello.world')
   );
