@@ -1,6 +1,6 @@
 {
   "name": "redux-staged-state",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "description": "Let users stage part of the state, useful e.g. for forms",
   "main": "dist/redux-staged-state.js",
   "jsnext:main": "src/index.js",

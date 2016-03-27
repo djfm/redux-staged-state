@@ -75,4 +75,8 @@ describe('The stage function', () => {
       bindings('hello').should.respondTo('onChange');
     });
   });
+  it('provides a stage method that replicates the current setup with a nested accessor', () => {
+    const helpers = stage('hello')({ hello: { world: { is: 'nice' } } });
+    helpers.stage('world').get('is').should.equal('nice');
+  });
 });

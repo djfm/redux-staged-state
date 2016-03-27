@@ -64,4 +64,5 @@ export const stage = (rootAccessor, dispatch, config) => state => ({
   reset: dispatch ? makeResetter(rootAccessor, dispatch) : undefined,
   bindings: dispatch ? makeBindings(rootAccessor, dispatch, state, config) : undefined,
   rootAccessor,
+  stage: accessor => stage(composeAccessors(rootAccessor, accessor), dispatch, config)(state),
 });
