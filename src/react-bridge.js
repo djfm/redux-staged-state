@@ -40,6 +40,11 @@ export const connectStaged = (accessorCreator, userConfig = {}) => WrappedCompon
        * the component.
        */
 
+      if (!this.unsubscribe) {
+        // do nothing if component not mounted
+        return;
+      }
+
       const originalAccessor = composeAccessors(this.getAccessor());
       const stagedAccessor = composeAccessors(
         config.stagedMountPoint,
@@ -58,6 +63,7 @@ export const connectStaged = (accessorCreator, userConfig = {}) => WrappedCompon
 
     componentWillUnMount() {
       this.unsubscribe();
+      this.unsubscribe = null;
     }
 
     render() {
