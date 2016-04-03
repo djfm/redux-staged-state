@@ -83,6 +83,37 @@ describe('The react bridge', () => {
     });
   });
 
+  it('the change of value should be reflected in the DOM even for connected components', () => {
+    const store = createStore(combineReducers({
+      staged: reducer,
+      customer: (state = ({ name: 'Bob' })) => state,
+    }));
+
+    const VanillaCustomerForm = ({ bindings }) =>
+      <input type="text" {...bindings('name')} />
+    ;
+    VanillaCustomerForm.propTypes = { bindings: React.PropTypes.func.isRequired };
+
+    const CustomerForm = connectStaged('customer')(VanillaCustomerForm);
+
+    const tree = ReactDOM.render(
+      <Provider store={store}>
+        <CustomerForm />
+      </Provider>,
+      document.createElement('div')
+    );
+
+    const input = ReactTestUtils.findRenderedDOMComponentWithTag(tree, 'input');
+    input.value.should.equal('Bob');
+    input.value = 'Alice';
+    ReactTestUtils.Simulate.change(input);
+    store.getState().should.deep.equal({
+      customer: { name: 'Bob' },
+      staged: { customer: { name: 'Alice' } },
+    });
+    input.value.should.equal('Alice');
+  });
+
   it('should provide a value binding that gets the value from the state', () => {
     const store = createStore((state = { customer: { name: 'Bob' } }) => state);
 
