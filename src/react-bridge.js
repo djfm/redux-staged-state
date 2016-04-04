@@ -1,5 +1,4 @@
 import React, { Component, createElement } from 'react';
-
 import { stage } from './stage';
 import { compose as composeAccessors } from './accessors';
 import { shallowEqual } from './utils';
@@ -15,69 +14,91 @@ const mapPropsToAccessor = (props, accessorCreator) => {
   return accessorCreator;
 };
 
-export const connectStaged = (accessorCreator, userConfig = {}) => WrappedComponent => {
-  const config = Object.assign({ stagedMountPoint: 'staged' }, userConfig);
+export const connectStaged = (accessorCreator, userConfig = {}) =>
+  WrappedComponent => {
+    const config = Object.assign({ stagedMountPoint: 'staged' }, userConfig);
 
-  class Container extends Component {
-    componentDidMount() {
-      this.unsubscribe = this.context.store.subscribe(this.handleChange.bind(this));
-    }
-
-    getAccessor() {
-      return mapPropsToAccessor(this.props, accessorCreator);
-    }
-
-    getStagingProps() {
-      return getStagingPropsFromStore(this.context.store, config)(
-        this.getAccessor()
-      );
-    }
-
-    handleChange() {
-      /**
-       * If either the original value of the store state
-       * or the staged version has changed, then update
-       * the component.
-       */
-
-      if (!this.unsubscribe) {
-        // do nothing if component not mounted
-        return;
+    class ConnectStaged extends Component {
+      componentDidMount() {
+        if (!this.unsubscribe) {
+          this.unsubscribe = this.context.store.subscribe(this.handleChange.bind(this));
+          this.handleChange();
+        }
       }
 
-      const originalAccessor = composeAccessors(this.getAccessor());
-      const stagedAccessor = composeAccessors(
-        config.stagedMountPoint,
-        originalAccessor
-      );
+      shouldComponentUpdate() {
+        return this.hasChanged;
+      }
 
-      const state = {
-        original: originalAccessor.of(this.context.store.getState()).get(),
-        staged: stagedAccessor.of(this.context.store.getState()).get(),
-      };
+      getAccessor() {
+        return mapPropsToAccessor(this.props, accessorCreator);
+      }
 
-      if (!shallowEqual(state, this.state || {})) {
-        this.setState(state);
+      getStagingProps() {
+        return getStagingPropsFromStore(this.context.store, config)(
+          this.getAccessor()
+        );
+      }
+
+      handleChange() {
+        /**
+         * If either the original value of the store state
+         * or the staged version has changed, then update
+         * the component.
+         */
+
+        if (!this.unsubscribe) {
+          // do nothing if component not mounted
+          return;
+        }
+
+        const originalAccessor = composeAccessors(this.getAccessor());
+        const stagedAccessor = composeAccessors(
+          config.stagedMountPoint,
+          originalAccessor
+        );
+
+        const state = {
+          original: originalAccessor.of(this.context.store.getState()).get(),
+          staged: stagedAccessor.of(this.context.store.getState()).get(),
+        };
+
+        if (!this.state || !shallowEqual(state, this.state)) {
+          this.hasChanged = true;
+          this.setState(state);
+        }
+      }
+
+      componentWillUnmount() {
+        this.unsubscribe();
+        this.unsubscribe = null;
+      }
+
+      render() {
+        const { renderedElement, hasChanged } = this;
+        this.hasChanged = false;
+
+        if (renderedElement && !hasChanged) {
+          return renderedElement;
+        }
+
+        this.renderedElement = createElement(
+          WrappedComponent,
+          Object.assign(
+            {},
+            this.props,
+            this.getStagingProps()
+          )
+        );
+
+        return this.renderedElement;
       }
     }
 
-    componentWillUnMount() {
-      this.unsubscribe();
-      this.unsubscribe = null;
-    }
-
-    render() {
-      return createElement(
-        WrappedComponent,
-        Object.assign(
-          {},
-          this.props,
-          this.getStagingProps()
-        )
-      );
-    }
+    ConnectStaged.contextTypes = { store: React.PropTypes.object };
+    ConnectStaged.displayName = `ConnectStaged(${
+      WrappedComponent.displayName || WrappedComponent.name || 'Component'
+    })`;
+    return ConnectStaged;
   }
-
-  Container.contextTypes = { store: React.PropTypes.object };
-  return Container;
-};
+;
