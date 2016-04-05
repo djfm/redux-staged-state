@@ -40,6 +40,11 @@ export const connectStaged = (accessorCreator, userConfig = {}) =>
         );
       }
 
+      componentWillUnmount() {
+        this.unsubscribe();
+        this.unsubscribe = null;
+      }
+
       handleChange() {
         /**
          * If either the original value of the store state
@@ -67,11 +72,6 @@ export const connectStaged = (accessorCreator, userConfig = {}) =>
           this.hasChanged = true;
           this.setState(state);
         }
-      }
-
-      componentWillUnmount() {
-        this.unsubscribe();
-        this.unsubscribe = null;
       }
 
       render() {
