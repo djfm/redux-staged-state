@@ -26,8 +26,9 @@ export const connectStaged = (accessorCreator, userConfig = {}) =>
         }
       }
 
-      shouldComponentUpdate() {
-        return this.hasChanged;
+      componentWillUnmount() {
+        this.unsubscribe();
+        this.unsubscribe = null;
       }
 
       getAccessor() {
@@ -38,11 +39,6 @@ export const connectStaged = (accessorCreator, userConfig = {}) =>
         return getStagingPropsFromStore(this.context.store, config)(
           this.getAccessor()
         );
-      }
-
-      componentWillUnmount() {
-        this.unsubscribe();
-        this.unsubscribe = null;
       }
 
       handleChange() {
@@ -69,20 +65,12 @@ export const connectStaged = (accessorCreator, userConfig = {}) =>
         };
 
         if (!this.state || !shallowEqual(state, this.state)) {
-          this.hasChanged = true;
           this.setState(state);
         }
       }
 
       render() {
-        const { renderedElement, hasChanged } = this;
-        this.hasChanged = false;
-
-        if (renderedElement && !hasChanged) {
-          return renderedElement;
-        }
-
-        this.renderedElement = createElement(
+        return createElement(
           WrappedComponent,
           Object.assign(
             {},
@@ -90,10 +78,8 @@ export const connectStaged = (accessorCreator, userConfig = {}) =>
             this.getStagingProps()
           )
         );
-
-        return this.renderedElement;
       }
-    }
+   }
 
     ConnectStaged.contextTypes = { store: React.PropTypes.object };
     ConnectStaged.displayName = `ConnectStaged(${
