@@ -155,6 +155,7 @@ describe('The react bridge', () => {
 
     const CustomerForm = connectStaged(
       'customer',
+      undefined,
       { stagedMountPoint: 'staged' }
     )(VanillaCustomerForm);
 

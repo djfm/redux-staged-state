@@ -14,9 +14,10 @@ const mapPropsToAccessor = (props, accessorCreator) => {
   return accessorCreator;
 };
 
-export const connectStaged = (accessorCreator, userConfig = {}) =>
+export const connectStaged = (accessorCreator, userMakeDispatch, userConfig = {}) =>
   WrappedComponent => {
     const config = Object.assign({ stagedMountPoint: 'staged' }, userConfig);
+    const makeDispatch = userMakeDispatch || (() => ({}));
 
     class ConnectStaged extends Component {
       componentDidMount() {
@@ -36,9 +37,18 @@ export const connectStaged = (accessorCreator, userConfig = {}) =>
       }
 
       getStagingProps() {
-        return getStagingPropsFromStore(this.context.store, config)(
+        const form = getStagingPropsFromStore(this.context.store, config)(
           this.getAccessor()
         );
+
+        const store = {
+          getState: this.context.store.getState,
+          dispatch: this.context.store.dispatch,
+        };
+
+        const dispatch = makeDispatch(store, form);
+
+        return Object.assign({}, form, dispatch);
       }
 
       handleChange() {
@@ -74,8 +84,8 @@ export const connectStaged = (accessorCreator, userConfig = {}) =>
           WrappedComponent,
           Object.assign(
             {},
-            this.props,
-            this.getStagingProps()
+            this.getStagingProps(),
+            this.props
           )
         );
       }
