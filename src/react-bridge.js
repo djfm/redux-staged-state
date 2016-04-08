@@ -14,10 +14,10 @@ const mapPropsToAccessor = (props, accessorCreator) => {
   return accessorCreator;
 };
 
-export const connectStaged = (accessorCreator, userMakeDispatch, userConfig = {}) =>
+export const connectStaged = (accessorCreator, usermapStoreToProps, userConfig = {}) =>
   WrappedComponent => {
     const config = Object.assign({ stagedMountPoint: 'staged' }, userConfig);
-    const makeDispatch = userMakeDispatch || (() => ({}));
+    const mapStoreToProps = usermapStoreToProps || (() => ({}));
 
     class ConnectStaged extends Component {
       componentDidMount() {
@@ -46,7 +46,7 @@ export const connectStaged = (accessorCreator, userMakeDispatch, userConfig = {}
           dispatch: this.context.store.dispatch,
         };
 
-        const dispatch = makeDispatch(store, form);
+        const dispatch = mapStoreToProps(store, form);
 
         return Object.assign({}, form, dispatch);
       }
